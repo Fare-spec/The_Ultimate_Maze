@@ -1,7 +1,7 @@
 import liste as fifo
 import random as rnd
 import pile as lifo
-rnd.seed(11)
+rnd.seed(110)
 
 class Maze:
     def __init__(self, width, height):
@@ -79,8 +79,63 @@ class Maze:
                 chemin = lifo.depiler(chemin)
 
 
-a = Maze(10,10)
-a.init_labyrinth()
-a.delete_wall(5,5,'N')
-b = a.is_visited(0,0)
-print(b)
+def print_labyrinth(maze):
+    """
+    Affiche le labyrinthe dans la console en utilisant des caractères ASCII.
+    Chaque cellule est dessinée en fonction de l'état de ses murs (N, S, E, W).
+    """
+    # Pour chaque ligne du labyrinthe
+    for y in range(maze.height):
+        # Première ligne : affiche les murs du haut (Nord)
+        top_line = ""
+        for x in range(maze.width):
+            if maze.grille[y][x]['walls']['N']:
+                top_line += "+---"
+            else:
+                top_line += "+   "
+        top_line += "+"
+        print(top_line)
+
+        # Deuxième ligne : affiche le mur de gauche (Ouest) et l'intérieur de la cellule
+        mid_line = ""
+        for x in range(maze.width):
+            if maze.grille[y][x]['walls']['W']:
+                mid_line += "|   "
+            else:
+                mid_line += "    "
+        # Pour la dernière cellule de la ligne, on vérifie le mur Est
+        if maze.grille[y][-1]['walls']['E']:
+            mid_line += "|"
+        else:
+            mid_line += " "
+        print(mid_line)
+    
+    # Affiche la dernière ligne du labyrinthe (murs du bas - Sud)
+    bottom_line = ""
+    for x in range(maze.width):
+        if maze.grille[maze.height - 1][x]['walls']['S']:
+            bottom_line += "+---"
+        else:
+            bottom_line += "+   "
+    bottom_line += "+"
+    print(bottom_line)
+
+
+def generate_and_print_labyrinth(width, height, start_x=0, start_y=0):
+    """
+    Instancie un objet Maze, initialise la grille, génère le labyrinthe avec DFS,
+    puis l'affiche via print_labyrinth.
+    """
+    maze = Maze(width, height)
+    maze.init_labyrinth()
+    # On marque la cellule de départ comme visitée avant de lancer DFS.
+    maze.grille[start_y][start_x]['visited'] = True
+    maze.dfs_generation(start_x, start_y)
+    print_labyrinth(maze)
+
+
+# Exemple d'utilisation :
+if __name__ == "__main__":
+    # Génère un labyrinthe de 10x10 à partir de la cellule (0, 0)
+    generate_and_print_labyrinth(10, 10, 0, 0)
+
