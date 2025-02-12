@@ -58,6 +58,7 @@ class Maze:
             return 'E', 'W'
 
     def dfs_generation(self, x_debut, y_debut):
+        self.grille[y_debut][x_debut]['walls']['W'] = False
         self.grille[y_debut][x_debut]['visited'] = True
         chemin = lifo.creer_pile_vide()
         chemin = lifo.empiler(chemin, (x_debut, y_debut))
@@ -75,9 +76,34 @@ class Maze:
             else:
                 chemin = lifo.depiler(chemin)
 
+    def dfs_generation_step_by_step(self, x_debut, y_debut):
+        self.grille[y_debut][x_debut]['visited'] = True
+        chemin = lifo.creer_pile_vide()
+        chemin = lifo.empiler(chemin, (x_debut, y_debut))
+        
+        yield (x_debut, y_debut)
+        
+        while not lifo.est_pile_vide(chemin):
+            current = lifo.sommet(chemin)
+            voisins = self.get_voisins(current[0], current[1])
+            unvisited = [voisin for voisin in voisins if not self.is_visited(voisin[0], voisin[1])]
+            
+            if unvisited:
+                selected_voisin = rnd.choice(unvisited)
+                murs = self.identify_direction(current[0], current[1],
+                                            selected_voisin[0], selected_voisin[1])
+                self.delete_wall(current[0], current[1], murs[0])
+                self.delete_wall(selected_voisin[0], selected_voisin[1], murs[1])
+                self.grille[selected_voisin[1]][selected_voisin[0]]['visited'] = True
+                chemin = lifo.empiler(chemin, selected_voisin)
+                yield selected_voisin
+            else:
+                chemin = lifo.depiler(chemin)
+                yield current
+
+
 def print_labyrinth(maze):
     for y in range(maze.height):
-        # Ligne supérieure de chaque cellule
         top_line = ""
         for x in range(maze.width):
             if maze.grille[y][x]['walls']['N']:
@@ -87,7 +113,6 @@ def print_labyrinth(maze):
         top_line += "+"
         print(top_line)
 
-        # Ligne centrale : mur de gauche et intérieur de la cellule
         mid_line = ""
         for x in range(maze.width):
             if maze.grille[y][x]['walls']['W']:
@@ -100,7 +125,6 @@ def print_labyrinth(maze):
             mid_line += " "
         print(mid_line)
 
-    # Dernière ligne : mur inférieur
     bottom_line = ""
     for x in range(maze.width):
         if maze.grille[maze.height - 1][x]['walls']['S']:
@@ -119,7 +143,6 @@ def generate_and_print_labyrinth(width, height, start_x=0, start_y=0):
     return maze
 
 if __name__ == "__main__":
-    # Demande de seed
     seed = input("Entrer une seed ou laisser vide: ")
     width = input("Entrer la taille en largeur du labyrinth: ")
     height = input("Entrer la taille en longueur du labyrinth: ")
