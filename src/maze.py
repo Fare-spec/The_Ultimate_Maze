@@ -1,7 +1,7 @@
 import liste as fifo
+import pickle
 import random as rnd
 import pile as lifo
-rnd.seed(110)
 
 class Maze:
     def __init__(self, width, height):
@@ -19,6 +19,7 @@ class Maze:
             ]
             for _ in range(self.height)
         ]
+
     def get_unvisited(self):
         cells_unvisited = []
         for y in range(self.height):
@@ -27,10 +28,8 @@ class Maze:
                     cells_unvisited.append((x, y))
         return cells_unvisited
 
-
     def delete_wall(self, x, y, direction):
         self.grille[y][x]['walls'][direction] = False
-    
 
     def get_voisins(self, x, y):
         voisins = []
@@ -43,22 +42,20 @@ class Maze:
         if y < self.height - 1:
             voisins.append((x, y + 1))
         return voisins
-    
-    def is_visited(self,x,y):
+
+    def is_visited(self, x, y):
         return self.grille[y][x]['visited']
-    
 
-    def identify_direction(self,x1,y1,x2,y2):
+    def identify_direction(self, x1, y1, x2, y2):
         if x1 == x2:
-            if y1 == y2+1:
-                return 'N','S'
+            if y1 == y2 + 1:
+                return 'N', 'S'
             else:
-                return 'S','N'
-        elif x1 == x2+1:
-            return 'W','E'
+                return 'S', 'N'
+        elif x1 == x2 + 1:
+            return 'W', 'E'
         else:
-            return 'E','W'
-
+            return 'E', 'W'
 
     def dfs_generation(self, x_debut, y_debut):
         self.grille[y_debut][x_debut]['visited'] = True
@@ -78,15 +75,9 @@ class Maze:
             else:
                 chemin = lifo.depiler(chemin)
 
-
 def print_labyrinth(maze):
-    """
-    Affiche le labyrinthe dans la console en utilisant des caractères ASCII.
-    Chaque cellule est dessinée en fonction de l'état de ses murs (N, S, E, W).
-    """
-    # Pour chaque ligne du labyrinthe
     for y in range(maze.height):
-        # Première ligne : affiche les murs du haut (Nord)
+        # Ligne supérieure de chaque cellule
         top_line = ""
         for x in range(maze.width):
             if maze.grille[y][x]['walls']['N']:
@@ -96,21 +87,20 @@ def print_labyrinth(maze):
         top_line += "+"
         print(top_line)
 
-        # Deuxième ligne : affiche le mur de gauche (Ouest) et l'intérieur de la cellule
+        # Ligne centrale : mur de gauche et intérieur de la cellule
         mid_line = ""
         for x in range(maze.width):
             if maze.grille[y][x]['walls']['W']:
                 mid_line += "|   "
             else:
                 mid_line += "    "
-        # Pour la dernière cellule de la ligne, on vérifie le mur Est
         if maze.grille[y][-1]['walls']['E']:
             mid_line += "|"
         else:
             mid_line += " "
         print(mid_line)
-    
-    # Affiche la dernière ligne du labyrinthe (murs du bas - Sud)
+
+    # Dernière ligne : mur inférieur
     bottom_line = ""
     for x in range(maze.width):
         if maze.grille[maze.height - 1][x]['walls']['S']:
@@ -120,22 +110,30 @@ def print_labyrinth(maze):
     bottom_line += "+"
     print(bottom_line)
 
-
 def generate_and_print_labyrinth(width, height, start_x=0, start_y=0):
-    """
-    Instancie un objet Maze, initialise la grille, génère le labyrinthe avec DFS,
-    puis l'affiche via print_labyrinth.
-    """
     maze = Maze(width, height)
     maze.init_labyrinth()
-    # On marque la cellule de départ comme visitée avant de lancer DFS.
     maze.grille[start_y][start_x]['visited'] = True
     maze.dfs_generation(start_x, start_y)
     print_labyrinth(maze)
+    return maze
 
-
-# Exemple d'utilisation :
 if __name__ == "__main__":
-    # Génère un labyrinthe de 10x10 à partir de la cellule (0, 0)
-    generate_and_print_labyrinth(10, 10, 0, 0)
+    # Demande de seed
+    seed = input("Entrer une seed ou laisser vide: ")
+    width = input("Entrer la taille en largeur du labyrinth: ")
+    height = input("Entrer la taille en longueur du labyrinth: ")
+    if seed == "":
+        seed = rnd.randint(1, 100000000000000)
+        print(f"Seed: {seed}")
+    rnd.seed(seed)
+
+    maze = generate_and_print_labyrinth(int(width), int(height), 0, 0)
+
+    save_choice = input("Voulez-vous enregistrer le labyrinthe ? (o/n) : ")
+    if save_choice.lower() == 'o':
+        filename = input("Entrez le nom du fichier (ex: labyrinthe.bin) : ")
+        with open(filename, "wb") as file:
+            pickle.dump(maze, file)
+        print(f"Labyrinthe enregistré sous {filename}")
 
