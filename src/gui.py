@@ -26,9 +26,9 @@ def draw_maze(maze, screen, cell_size):
                                  (x_pixel + cell_size, y_pixel + cell_size), 2)
 
 def main():
-    maze_width = 20
-    maze_height = 20
-    cell_size = 60
+    maze_width = 100
+    maze_height = 100
+    cell_size = 10
 
     maze = Maze(maze_width, maze_height)
     maze.init_labyrinth()
@@ -67,7 +67,7 @@ def main():
                              (x * cell_size, y * cell_size, cell_size, cell_size), 0)
 
         pygame.display.flip()
-        clock.tick(30)
+        clock.tick(70)
     pygame.quit()
 
 if __name__ == "__main__":
