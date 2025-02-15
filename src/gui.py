@@ -40,6 +40,35 @@ def can_move(maze, x, y, direction):
     if direction == 'RIGHT' and not cell['walls']['E']:
         return True
     return False
+def display_message(screen, text, font_size=36, color=(255, 255, 255), position=(100, 100)):
+    font = pygame.font.Font(None, font_size)
+    text_surface = font.render(text, True, color)
+    screen.blit(text_surface, position)
+def pause_game(screen):
+    pygame.display.flip()
+    paused = True
+    while paused:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN or event.key == pygame.K_SPACE or event.key == pygame.K_ESCAPE:
+                    paused = False
+def exit_maze(screen, maze, player_pos, cell_size, vision_radius, wall_color, direction):
+    for _ in range(5):
+        if direction == 'RIGHT':
+            player_pos[0] += 0.2
+        elif direction == 'DOWN':
+            player_pos[1] += 0.2
+        
+        screen.fill((0, 0, 0))
+        draw_maze(maze, screen, cell_size, player_pos, vision_radius, wall_color)
+        center = vision_radius * cell_size
+        pygame.draw.rect(screen, (255, 0, 0), (center + 3, center + 3, cell_size - 6, cell_size - 6))
+        pygame.display.flip()
+        pygame.time.delay(100)
+
 
 def main(difficulty, algorithm, largeur, longueur):
     wall_color = (255, 0, 0) if difficulty == 1 else (0, 0, 0)
@@ -67,6 +96,7 @@ def main(difficulty, algorithm, largeur, longueur):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     running = False
@@ -78,14 +108,21 @@ def main(difficulty, algorithm, largeur, longueur):
                     player_pos[0] -= 1
                 if event.key == pygame.K_RIGHT and can_move(maze, player_pos[0], player_pos[1], 'RIGHT'):
                     player_pos[0] += 1
-                if maze.is_tp(player_pos[0],player_pos[1]):
-                    if (player_pos[0],player_pos[1]) == tps[0]:
-                        player_pos[0], player_pos[1] = tps[1]
-                    else:
-                        player_pos[0], player_pos[1] = tps[0]
-                    
-                    maze.remove_tps()
+            if maze.is_end(player_pos[0], player_pos[1]):
+                exit_maze(screen, maze, player_pos, cell_size, vision_radius, wall_color, 'RIGHT')
+                display_message(screen, "Bravo ! Vous avez gagné !", 36, (255, 255, 0), (150, 150))
+                pygame.display.flip()
+                pause_game(screen)
 
+            if maze.is_tp(player_pos[0],player_pos[1]):
+                if (player_pos[0],player_pos[1]) == tps[0]:
+                    player_pos[0], player_pos[1] = tps[1]
+                else:
+                    player_pos[0], player_pos[1] = tps[0]
+                
+                maze.remove_tps()
+                
+                    
 
         screen.fill((0, 0, 0))
         draw_maze(maze, screen, cell_size, player_pos, vision_radius, wall_color)
@@ -98,6 +135,7 @@ def main(difficulty, algorithm, largeur, longueur):
     pygame.quit()
 
 if __name__ == "__main__":
+    main(difficulty=1, algorithm=1, largeur=10, longueur=10)
     difficulty = int(input("Merci d'entrer le niveau de difficulté: \n1)Normal\n2)Impossible\nVotre réponse(1 ou 2): "))
     algorithm = int(input("Merci de choisir l'algorithme de génération du Labyrinthe:\n1)DFS (Depth First Search)\n2)Prim's Algorithm\n(1/2): "))
     largeur = 0
@@ -107,4 +145,3 @@ if __name__ == "__main__":
     while longueur < 10:
         longueur = int(input("Merci de choisir la longueur du Labyrinthe (>10): "))
 
-    main(difficulty=1, algorithm=1, largeur=10, longueur=10)
