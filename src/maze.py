@@ -12,12 +12,36 @@ class Maze:
             [
                 {
                     'visited': False,
-                    'walls': {'N': True, 'S': True, 'E': True, 'W': True}
+                    'walls': {'N': True, 'S': True, 'E': True, 'W': True},
+                    'teleporter': False,
                 }
                 for _ in range(self.width)
             ]
             for _ in range(self.height)
         ]
+    def init_teleporter(self):
+        x, y = rnd.randint(0,self.width-1),rnd.randint(0,self.height-1)
+        x2, y2 =  rnd.randint(0,self.width-1),rnd.randint(0,self.height-1)
+        self.grille[y][x]['teleporter']=True
+        self.grille[y2][x2]['teleporter']=True
+
+    def is_tp(self,x,y):
+        if self.grille[y][x]['teleporter']:
+            return True
+        return False
+
+    def get_tp(self):
+        tp = []
+        for y in range(self.height):
+            for x in range(self.width):
+                if self.grille[y][x]['teleporter']:
+                    tp.append((x,y))
+        return tp
+    def remove_tps(self):
+        tps = self.get_tp()
+        for x,y in tps:
+            self.grille[y][x]['teleporter'] = False
+        return self
 
     def get_unvisited(self):
         cells_unvisited = []
