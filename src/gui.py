@@ -1,5 +1,6 @@
 import pygame
 from maze import Maze
+import maze as mz
 
 def draw_maze(maze, screen, cell_size, player_pos, vision_radius, wall_color):
     px, py = player_pos
@@ -136,6 +137,9 @@ def main(difficulty, algorithm, largeur, longueur):
 
 if __name__ == "__main__":
     difficulty = int(input("Merci d'entrer le niveau de difficulté: \n1)Normal\n2)Impossible\nVotre réponse(1 ou 2): "))
+    seed = input('Veuillez entrer une seed ou laisser vide pour en générer une: ')
+    if seed:
+        mz.rnd.seed(seed)
     algorithm = int(input("Merci de choisir l'algorithme de génération du Labyrinthe:\n1)DFS (Depth First Search)\n2)Prim's Algorithm\n(1/2): "))
     largeur = 0
     while largeur < 10:
