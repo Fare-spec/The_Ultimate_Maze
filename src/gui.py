@@ -2,7 +2,7 @@ import pygame
 from maze import Maze
 
 def draw_maze(maze, screen, cell_size):
-    wall_color = (255, 0, 0)
+    wall_color = (0, 0, 0)
     for y in range(maze.height):
         for x in range(maze.width):
             cell = maze.grille[y][x]
@@ -25,23 +25,24 @@ def draw_maze(maze, screen, cell_size):
                                  (x_pixel + cell_size, y_pixel),
                                  (x_pixel + cell_size, y_pixel + cell_size), 2)
 
+
+
+
+
 def main():
-    maze_width = 100
-    maze_height = 100
+    maze_width = 600
+    maze_height = 600
     cell_size = 10
 
     maze = Maze(maze_width, maze_height)
     maze.init_labyrinth()
-    generation = maze.dfs_generation_step_by_step(0, 0)
+    maze.kruskal_generation()
 
-    pygame.init()
-    screen = pygame.display.set_mode((maze_width * cell_size, maze_height * cell_size))
-    pygame.display.set_caption("Génération du Labyrinthe")
+    screen = pygame.display.set_mode((maze_width * cell_size + 2, maze_height * cell_size + 2))
+    pygame.display.set_caption("The Ultimate Maze")
     clock = pygame.time.Clock()
     
-    generation_done = False
-    current_cell = None
-
+    pygame.init()
     running = True
     while running:
         for event in pygame.event.get():
@@ -51,25 +52,11 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     running = False
 
-        if not generation_done:
-            try:
-                current_cell = next(generation)
-            except StopIteration:
-                generation_done = True
-
-        screen.fill((0, 0, 0))
+        screen.fill((255, 255, 255))
         draw_maze(maze, screen, cell_size)
-
-        if current_cell is not None:
-            x, y = current_cell
-            highlight_color = (255, 0, 0)
-            pygame.draw.rect(screen, highlight_color,
-                             (x * cell_size, y * cell_size, cell_size, cell_size), 0)
-
         pygame.display.flip()
         clock.tick(70)
     pygame.quit()
 
 if __name__ == "__main__":
     main()
-

@@ -1,4 +1,3 @@
-import liste as fifo
 import pickle
 import random as rnd
 import pile as lifo
@@ -58,7 +57,9 @@ class Maze:
             return 'E', 'W'
 
     def dfs_generation(self, x_debut, y_debut):
+
         self.grille[y_debut][x_debut]['walls']['W'] = False
+        self.grille[self.width - 1][self.height - 1]['walls']['E'] = False
         self.grille[y_debut][x_debut]['visited'] = True
         chemin = lifo.creer_pile_vide()
         chemin = lifo.empiler(chemin, (x_debut, y_debut))
@@ -75,32 +76,24 @@ class Maze:
                 chemin = lifo.empiler(chemin, selected_voisin)
             else:
                 chemin = lifo.depiler(chemin)
-
-    def dfs_generation_step_by_step(self, x_debut, y_debut):
+    def prim_algo(self, x_debut, y_debut):
         self.grille[y_debut][x_debut]['visited'] = True
-        chemin = lifo.creer_pile_vide()
-        chemin = lifo.empiler(chemin, (x_debut, y_debut))
-        
-        yield (x_debut, y_debut)
-        
-        while not lifo.est_pile_vide(chemin):
-            current = lifo.sommet(chemin)
-            voisins = self.get_voisins(current[0], current[1])
-            unvisited = [voisin for voisin in voisins if not self.is_visited(voisin[0], voisin[1])]
-            
-            if unvisited:
-                selected_voisin = rnd.choice(unvisited)
-                murs = self.identify_direction(current[0], current[1],
-                                            selected_voisin[0], selected_voisin[1])
-                self.delete_wall(current[0], current[1], murs[0])
-                self.delete_wall(selected_voisin[0], selected_voisin[1], murs[1])
-                self.grille[selected_voisin[1]][selected_voisin[0]]['visited'] = True
-                chemin = lifo.empiler(chemin, selected_voisin)
-                yield selected_voisin
-            else:
-                chemin = lifo.depiler(chemin)
-                yield current
-
+        frontier = self.get_voisins(x_debut, y_debut)
+        while frontier:
+            cell = rnd.choice(frontier)
+            x, y = cell[0], cell[1]
+            visited_neighbors = [voisin for voisin in self.get_voisins(x, y)if self.is_visited(voisin[0], voisin[1])]
+            if visited_neighbors:
+                cell2 = rnd.choice(visited_neighbors)
+                wall1, wall2 = self.identify_direction(x, y, cell2[0], cell2[1])
+                self.delete_wall(x, y, wall1)
+                self.delete_wall(cell2[0], cell2[1], wall2)
+            self.grille[y][x]['visited'] = True
+            frontier.remove(cell)
+            for voisin in self.get_voisins(x, y):
+                vx, vy = voisin[0], voisin[1]
+                if not self.is_visited(vx, vy) and voisin not in frontier:
+                    frontier.append(voisin)
 
 def print_labyrinth(maze):
     for y in range(maze.height):
@@ -138,7 +131,7 @@ def generate_and_print_labyrinth(width, height, start_x=0, start_y=0):
     maze = Maze(width, height)
     maze.init_labyrinth()
     maze.grille[start_y][start_x]['visited'] = True
-    maze.dfs_generation(start_x, start_y)
+    maze.prim_algo(start_x, start_y)
     print_labyrinth(maze)
     return maze
 
