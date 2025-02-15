@@ -135,7 +135,6 @@ def main(difficulty, algorithm, largeur, longueur):
     pygame.quit()
 
 if __name__ == "__main__":
-    main(difficulty=1, algorithm=1, largeur=10, longueur=10)
     difficulty = int(input("Merci d'entrer le niveau de difficulté: \n1)Normal\n2)Impossible\nVotre réponse(1 ou 2): "))
     algorithm = int(input("Merci de choisir l'algorithme de génération du Labyrinthe:\n1)DFS (Depth First Search)\n2)Prim's Algorithm\n(1/2): "))
     largeur = 0
@@ -145,3 +144,4 @@ if __name__ == "__main__":
     while longueur < 10:
         longueur = int(input("Merci de choisir la longueur du Labyrinthe (>10): "))
 
+    main(difficulty, algorithm, largeur, longueur)
