@@ -77,7 +77,9 @@ class Maze:
             else:
                 chemin = lifo.depiler(chemin)
     def prim_algo(self, x_debut, y_debut):
-        self.grille[y_debut][x_debut]['visited'] = True
+        self.grille[y_debut][x_debut]['walls']['W'] = False
+        self.grille[self.width - 1][self.height - 1]['walls']['E'] = False
+        self.grille[y_debut][x_debut]['visited'] = True        
         frontier = self.get_voisins(x_debut, y_debut)
         while frontier:
             cell = rnd.choice(frontier)
