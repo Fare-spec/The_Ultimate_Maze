@@ -30,13 +30,13 @@ def draw_maze(maze, screen, cell_size):
 
 
 def main():
-    maze_width = 600
-    maze_height = 600
+    maze_width = 100
+    maze_height = 100
     cell_size = 10
 
     maze = Maze(maze_width, maze_height)
     maze.init_labyrinth()
-    maze.kruskal_generation()
+    maze.prim_algo(0,0)
 
     screen = pygame.display.set_mode((maze_width * cell_size + 2, maze_height * cell_size + 2))
     pygame.display.set_caption("The Ultimate Maze")
