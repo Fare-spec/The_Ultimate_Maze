@@ -43,7 +43,7 @@ def draw_maze(maze, screen, cell_size, player_pos, vision_radius, wall_color, ch
             x_pixel = (cx - base_x + vision_radius) * cell_size - offset_x + cell_size // 2
             y_pixel = (cy - base_y + vision_radius) * cell_size - offset_y + cell_size // 2
             points.append((x_pixel, y_pixel))
-        pygame.draw.lines(screen, (0, 255, 0), False, points, 3)
+        pygame.draw.lines(screen, (0, 255, 0), False, points,1)
 
 def animate_movement(maze, start_pos, end_pos, screen, cell_size, vision_radius, wall_color, clock):
     steps = 10

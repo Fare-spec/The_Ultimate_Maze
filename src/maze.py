@@ -109,30 +109,40 @@ class Maze:
                 if not self.is_visited(*voisin) and voisin not in frontier:
                     frontier.append(voisin)
 
-    def dijkstra(self,x_start,y_start):
+    def dijkstra(self, x_start, y_start):
         distances = {(x, y): float('inf') for y in range(self.height) for x in range(self.width)}
-        distances[(x_start,y_start)] = 0
+        distances[(x_start, y_start)] = 0
         precedent = {}
         queue = [(0, (x_start, y_start))]
         while queue:
-            current, (x,y) = heapq.heappop(queue)
-            if self.is_end(x,y):
+            current, (x, y) = heapq.heappop(queue)
+            if self.is_end(x, y):
                 path = []
-                while (x,y) in precedent:
-                    path.append((x,y))
-                    x, y = precedent[(x,y)]
-                path.append((x_start,y_start))
+                while (x, y) in precedent:
+                    path.append((x, y))
+                    x, y = precedent[(x, y)]
+                path.append((x_start, y_start))
                 path.reverse()
                 return path
-            for x2,y2 in self.get_voisins(x,y):
+            for x2, y2 in self.get_voisins(x, y):
                 direction = self.identify_direction(x, y, x2, y2)[0]
                 if not self.grille[y][x]['walls'][direction]:
-                    new_dist = current+1
-                    if new_dist<distances[(x2,y2)]:
-                        distances[(x2,y2)] = new_dist
-                        precedent[(x2,y2)] = (x,y)
-                        heapq.heappush(queue, (new_dist,(x2,y2)))
+                    new_dist = current + 1
+                    if new_dist < distances[(x2, y2)]:
+                        distances[(x2, y2)] = new_dist
+                        precedent[(x2, y2)] = (x, y)
+                        heapq.heappush(queue, (new_dist, (x2, y2)))
+            # Partie des teleporteurs
+            if self.grille[y][x]['teleporter']:
+                for tx, ty in self.get_tp():
+                    if (tx, ty) != (x, y):
+                        new_dist = current + 1  
+                        if new_dist < distances[(tx, ty)]:
+                            distances[(tx, ty)] = new_dist
+                            precedent[(tx, ty)] = (x, y)
+                            heapq.heappush(queue, (new_dist, (tx, ty)))
         return None
+
 
 
 
@@ -197,4 +207,3 @@ if __name__ == "__main__":
         with open(filename, "wb") as file:
             pickle.dump(maze, file)
         print(f"Labyrinthe enregistré sous {filename}")
-
