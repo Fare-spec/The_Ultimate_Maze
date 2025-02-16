@@ -109,3 +109,61 @@ class Maze:
             for voisin in self.get_voisins(x, y):
                 if not self.is_visited(*voisin) and voisin not in frontier:
                     frontier.append(voisin)
+def print_labyrinth(maze):
+    for y in range(maze.height):
+        top_line = ""
+        for x in range(maze.width):
+            if maze.grille[y][x]['walls']['N']:
+                top_line += "+---"
+            else:
+                top_line += "+   "
+        top_line += "+"
+        print(top_line)
+
+        mid_line = ""
+        for x in range(maze.width):
+            if maze.grille[y][x]['walls']['W']:
+                mid_line += "|   "
+            else:
+                mid_line += "    "
+        if maze.grille[y][-1]['walls']['E']:
+            mid_line += "|"
+        else:
+            mid_line += " "
+        print(mid_line)
+
+    bottom_line = ""
+    for x in range(maze.width):
+        if maze.grille[maze.height - 1][x]['walls']['S']:
+            bottom_line += "+---"
+        else:
+            bottom_line += "+   "
+    bottom_line += "+"
+    print(bottom_line)
+
+def generate_and_print_labyrinth(width, height, start_x=0, start_y=0):
+    maze = Maze(width, height)
+    maze.init_labyrinth()
+    maze.grille[start_y][start_x]['visited'] = True
+    maze.prim_algo(start_x, start_y)
+    print_labyrinth(maze)
+    return maze
+
+if __name__ == "__main__":
+    seed = input("Entrer une seed ou laisser vide: ")
+    width = input("Entrer la taille en largeur du labyrinthe: ")
+    height = input("Entrer la taille en longueur du labyrinthe: ")
+    if seed == "":
+        seed = rnd.randint(1, 100000000000000)
+        print(f"Seed: {seed}")
+    rnd.seed(seed)
+
+    maze = generate_and_print_labyrinth(int(width), int(height), 0, 0)
+
+    save_choice = input("Voulez-vous enregistrer le labyrinthe ? (o/n) : ")
+    if save_choice.lower() == 'o':
+        filename = input("Entrez le nom du fichier (ex: labyrinthe.bin) : ")
+        with open(filename, "wb") as file:
+            pickle.dump(maze, file)
+        print(f"Labyrinthe enregistré sous {filename}")
+

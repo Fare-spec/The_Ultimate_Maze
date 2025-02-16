@@ -15,10 +15,4 @@ impl<T> Stack<T> {
     pub fn is_empty(&self) -> bool {
         self.items.is_empty()
     }
-    pub fn peek(&self) -> Option<&T> {
-        self.items.last()
-    }
-    pub fn size(&self) -> usize {
-        self.items.len()
-    }
 }

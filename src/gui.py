@@ -1,6 +1,7 @@
 import pygame
 from maze import Maze
 import maze as mz
+import pickle
 
 def draw_maze(maze, screen, cell_size, player_pos, vision_radius, wall_color):
     px, py = player_pos
@@ -149,3 +150,6 @@ if __name__ == "__main__":
         longueur = int(input("Merci de choisir la longueur du Labyrinthe (>10): "))
 
     main(difficulty, algorithm, largeur, longueur)
+    with open('maze.bin','rb') as f:
+        maze = pickle.load(f)
+    main(difficulty,algorithm,largeur)
