@@ -105,7 +105,7 @@ def exit_maze(screen, maze, player_pos, cell_size, vision_radius, wall_color, di
 def main(difficulty, algorithm, largeur, longueur, braid):
     pygame.init()
     pygame.key.set_repeat(200, 50)
-    wall_color = (255, 0, 0) if difficulty == 1 else (0, 0, 0)
+    wall_color = (255, 0, 0) if difficulty == 1 or difficulty == 3 else (0, 0, 0)
     vision_radius = 30
     cell_size = 20
 
@@ -118,8 +118,8 @@ def main(difficulty, algorithm, largeur, longueur, braid):
     else:
         maze.prim_algo(0, 0)
     if braid == 'o':
-        maze.braid_maze(p=0.5)  # Ajuster p pour plus ou moins de randomization
-    maze1_len = len(maze.dijkstra(0,0))
+        maze.braid_maze(p=0.5)
+    maze1_len = len(maze.dijkstra(0, 0))
 
     screen_size = (vision_radius * 2 + 1) * cell_size
     screen = pygame.display.set_mode((screen_size, screen_size))
@@ -128,6 +128,9 @@ def main(difficulty, algorithm, largeur, longueur, braid):
 
     player_pos = [0, 0]
     move_count = 0
+    if difficulty == 3:
+        next_wall_trigger = 5
+
     tps = maze.get_tp()
     chemin_dijkstra = None
     running = True
@@ -182,6 +185,10 @@ def main(difficulty, algorithm, largeur, longueur, braid):
                             move_count += 1
                         chemin_dijkstra = None
 
+        if difficulty == 3 and move_count >= next_wall_trigger:
+            maze.add_random_wall(player_pos[0],player_pos[1])
+            next_wall_trigger += 5
+
         if maze.is_end(player_pos[0], player_pos[1]):
             optimal_path = maze.dijkstra(0, 0)
             if optimal_path:
@@ -222,7 +229,9 @@ def main(difficulty, algorithm, largeur, longueur, braid):
 
 
 
+
 if __name__ == "__main__":
+
     default_choice = input(
         "Voulez-vous utiliser les paramètres par défaut ?\n"
         "(DFS, largeur 10, longueur 10, seed aléatoire, braiding activé) (o/n): "
@@ -242,9 +251,9 @@ if __name__ == "__main__":
             try:
                 difficulty = int(input(
                     "Merci d'entrer le niveau de difficulté: \n"
-                    "1) Normal\n2) Impossible\nVotre réponse (1 ou 2): "
+                    "1) Normal\n2) Impossible\n3) Difficile\nVotre réponse (1, 2, 3): "
                 ))
-                if difficulty not in [1, 2]:
+                if difficulty not in [1, 2, 3]:
                     raise ValueError
                 break
             except ValueError:

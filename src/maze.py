@@ -213,6 +213,44 @@ class Maze:
                             self.grille[y][x+1]['walls']['W'] = False
 
 
+    def add_random_wall(self,x,y):
+        candidate_cells = []
+        for y in range(self.height):
+            for x in range(self.width):
+                for (nx, ny) in self.get_voisins(x, y):
+                    d_from, _ = self.identify_direction(x, y, nx, ny)
+                    if not self.grille[y][x]['walls'][d_from]:
+                        candidate_cells.append((x, y))
+                        break
+        if not candidate_cells:
+            return
+
+        x0, y0 = rnd.choice(candidate_cells)
+
+        connected_neighbors = []
+        for (nx, ny) in self.get_voisins(x0, y0):
+            d_from, _ = self.identify_direction(x0, y0, nx, ny)
+            if not self.grille[y0][x0]['walls'][d_from]:
+                connected_neighbors.append((nx, ny))
+
+        if not connected_neighbors:
+            return
+
+        nx, ny = rnd.choice(connected_neighbors)
+        d_from, d_to = self.identify_direction(x0, y0, nx, ny)
+
+        self.grille[y0][x0]['walls'][d_from] = True
+        self.grille[ny][nx]['walls'][d_to] = True
+
+        if self.dijkstra(x,y) is None:
+            self.grille[y0][x0]['walls'][d_from] = False
+            self.grille[ny][nx]['walls'][d_to] = False
+            self.braid_maze()
+
+
+
+
+
 
 
 
@@ -258,6 +296,8 @@ def generate_and_print_labyrinth(width, height, start_x=0, start_y=0):
     return maze
 
 if __name__ == "__main__":
+
+
     seed = input("Entrer une seed ou laisser vide: ")
     width = input("Entrer la taille en largeur du labyrinthe: ")
     height = input("Entrer la taille en longueur du labyrinthe: ")
