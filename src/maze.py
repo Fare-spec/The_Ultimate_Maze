@@ -109,39 +109,109 @@ class Maze:
                 if not self.is_visited(*voisin) and voisin not in frontier:
                     frontier.append(voisin)
 
-    def dijkstra(self, x_start, y_start):
-        distances = {(x, y): float('inf') for y in range(self.height) for x in range(self.width)}
-        distances[(x_start, y_start)] = 0
-        precedent = {}
-        queue = [(0, (x_start, y_start))]
-        while queue:
-            current, (x, y) = heapq.heappop(queue)
+    def dijkstra(self, x_start, y_start, tp_penalty=1):
+        import math, heapq
+        dist = {}
+        pred = {}
+        for y in range(self.height):
+            for x in range(self.width):
+                dist[(x, y, True)] = math.inf
+                dist[(x, y, False)] = math.inf
+        start_state = (x_start, y_start, True)
+        dist[start_state] = 0
+        pq = [(0, start_state)]
+        
+        TP = self.get_tp()
+
+        while pq:
+            d, state = heapq.heappop(pq)
+            if d > dist[state]:
+                continue
+            x, y, tp_avail = state
             if self.is_end(x, y):
                 path = []
-                while (x, y) in precedent:
-                    path.append((x, y))
-                    x, y = precedent[(x, y)]
+                cur = state
+                while cur in pred:
+                    path.append((cur[0], cur[1]))
+                    cur = pred[cur][0]
                 path.append((x_start, y_start))
                 path.reverse()
+                print(len(path))
                 return path
-            for x2, y2 in self.get_voisins(x, y):
-                direction = self.identify_direction(x, y, x2, y2)[0]
-                if not self.grille[y][x]['walls'][direction]:
-                    new_dist = current + 1
-                    if new_dist < distances[(x2, y2)]:
-                        distances[(x2, y2)] = new_dist
-                        precedent[(x2, y2)] = (x, y)
-                        heapq.heappush(queue, (new_dist, (x2, y2)))
-            # Partie des teleporteurs
-            if self.grille[y][x]['teleporter']:
-                for tx, ty in self.get_tp():
+
+            if tp_avail and self.grille[y][x]['teleporter']:
+                for (tx, ty) in TP:
                     if (tx, ty) != (x, y):
-                        new_dist = current + 1  
-                        if new_dist < distances[(tx, ty)]:
-                            distances[(tx, ty)] = new_dist
-                            precedent[(tx, ty)] = (x, y)
-                            heapq.heappush(queue, (new_dist, (tx, ty)))
+                        new_state = (tx, ty, False)
+                        nd = d + tp_penalty
+                        if nd < dist[new_state]:
+                            dist[new_state] = nd
+                            pred[new_state] = (state, 'teleport')
+                            heapq.heappush(pq, (nd, new_state))
+                continue
+
+            for (nx, ny) in self.get_voisins(x, y):
+                direction = self.identify_direction(x, y, nx, ny)[0]
+                if not self.grille[y][x]['walls'][direction]:
+                    if tp_avail and self.grille[ny][nx]['teleporter']:
+                        base_cost = d + 1
+                        for (tx, ty) in TP:
+                            if (tx, ty) != (nx, ny):
+                                new_state = (tx, ty, False)
+                                nd = base_cost + tp_penalty
+                                if nd < dist[new_state]:
+                                    dist[new_state] = nd
+                                    pred[new_state] = (state, 'teleport')
+                                    heapq.heappush(pq, (nd, new_state))
+                    else:
+                        new_state = (nx, ny, tp_avail)
+                        nd = d + 1
+                        if nd < dist[new_state]:
+                            dist[new_state] = nd
+                            pred[new_state] = (state, 'normal')
+                            heapq.heappush(pq, (nd, new_state))
         return None
+
+    def braid_maze(self, p=0.5):
+        for y in range(self.height):
+            for x in range(self.width):
+                cell = self.grille[y][x]
+                open_passages = sum(1 for ouvert in cell['walls'].values() if not ouvert)
+                if open_passages == 1:
+                    closed_walls = []
+                    for direction, ouvert in cell['walls'].items():
+                        if ouvert:
+                            if (direction == 'N' and y == 0) or \
+                            (direction == 'S' and y == self.height - 1) or \
+                            (direction == 'W' and x == 0) or \
+                            (direction == 'E' and x == self.width - 1):
+                                continue
+
+                            voisin = None
+                            if direction == 'N' and y > 0:
+                                voisin = self.grille[y-1][x]
+                            elif direction == 'S' and y < self.height - 1:
+                                voisin = self.grille[y+1][x]
+                            elif direction == 'W' and x > 0:
+                                voisin = self.grille[y][x-1]
+                            elif direction == 'E' and x < self.width - 1:
+                                voisin = self.grille[y][x+1]
+                            if voisin is not None:
+                                open_voisin = sum(1 for o in voisin['walls'].values() if not o)
+                                if open_voisin > 1:
+                                    closed_walls.append(direction)
+                    if closed_walls and rnd.random() < p:
+                        mur_choisi = rnd.choice(closed_walls)
+                        cell['walls'][mur_choisi] = False
+                        if mur_choisi == 'N' and y > 0:
+                            self.grille[y-1][x]['walls']['S'] = False
+                        elif mur_choisi == 'S' and y < self.height - 1:
+                            self.grille[y+1][x]['walls']['N'] = False
+                        elif mur_choisi == 'W' and x > 0:
+                            self.grille[y][x-1]['walls']['E'] = False
+                        elif mur_choisi == 'E' and x < self.width - 1:
+                            self.grille[y][x+1]['walls']['W'] = False
+
 
 
 

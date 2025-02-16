@@ -102,9 +102,9 @@ def exit_maze(screen, maze, player_pos, cell_size, vision_radius, wall_color, di
         pygame.display.flip()
         pygame.time.delay(100)
 
-
-def main(difficulty, algorithm, largeur, longueur):
+def main(difficulty, algorithm, largeur, longueur, braid):
     pygame.init()
+    pygame.key.set_repeat(200, 50)
     wall_color = (255, 0, 0) if difficulty == 1 else (0, 0, 0)
     vision_radius = 30
     cell_size = 20
@@ -112,10 +112,14 @@ def main(difficulty, algorithm, largeur, longueur):
     maze = Maze(largeur, longueur)
     maze.init_labyrinth()
     maze.init_teleporter()
+
     if algorithm == 1:
         maze.dfs_generation(0, 0)
     else:
         maze.prim_algo(0, 0)
+    if braid == 'o':
+        maze.braid_maze(p=0.5)  # Ajuster p pour plus ou moins de randomization
+    maze1_len = len(maze.dijkstra(0,0))
 
     screen_size = (vision_radius * 2 + 1) * cell_size
     screen = pygame.display.set_mode((screen_size, screen_size))
@@ -123,6 +127,7 @@ def main(difficulty, algorithm, largeur, longueur):
     clock = pygame.time.Clock()
 
     player_pos = [0, 0]
+    move_count = 0
     tps = maze.get_tp()
     chemin_dijkstra = None
     running = True
@@ -135,28 +140,33 @@ def main(difficulty, algorithm, largeur, longueur):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     running = False
+
                 if event.key == pygame.K_UP and can_move(maze, player_pos[0], player_pos[1], 'UP'):
                     animate_movement(maze, player_pos, [player_pos[0], player_pos[1] - 1],
                                      screen, cell_size, vision_radius, wall_color, clock)
                     player_pos[1] -= 1
+                    move_count += 1
                     chemin_dijkstra = None
 
                 if event.key == pygame.K_DOWN and can_move(maze, player_pos[0], player_pos[1], 'DOWN'):
                     animate_movement(maze, player_pos, [player_pos[0], player_pos[1] + 1],
                                      screen, cell_size, vision_radius, wall_color, clock)
                     player_pos[1] += 1
+                    move_count += 1
                     chemin_dijkstra = None
 
                 if event.key == pygame.K_LEFT and can_move(maze, player_pos[0], player_pos[1], 'LEFT'):
                     animate_movement(maze, player_pos, [player_pos[0] - 1, player_pos[1]],
                                      screen, cell_size, vision_radius, wall_color, clock)
                     player_pos[0] -= 1
+                    move_count += 1
                     chemin_dijkstra = None
 
                 if event.key == pygame.K_RIGHT and can_move(maze, player_pos[0], player_pos[1], 'RIGHT'):
                     animate_movement(maze, player_pos, [player_pos[0] + 1, player_pos[1]],
                                      screen, cell_size, vision_radius, wall_color, clock)
                     player_pos[0] += 1
+                    move_count += 1
                     chemin_dijkstra = None
 
                 if event.key == pygame.K_o:
@@ -169,9 +179,23 @@ def main(difficulty, algorithm, largeur, longueur):
                             animate_movement(maze, player_pos, next_pos,
                                              screen, cell_size, vision_radius, wall_color, clock)
                             player_pos = [float(next_pos[0]), float(next_pos[1])]
+                            move_count += 1
                         chemin_dijkstra = None
 
         if maze.is_end(player_pos[0], player_pos[1]):
+            optimal_path = maze.dijkstra(0, 0)
+            if optimal_path:
+                optimal_moves = len(optimal_path) - 1
+            else:
+                optimal_moves = None
+
+            print("Mouvements réalisés :", move_count)
+            print("Nombre de mouvements du chemin optimal :", maze1_len)
+            if maze1_len is not None and move_count <= maze1_len:
+                print("Vous avez pris le plus court chemin")
+            else:
+                print("Vous n'avez pas pris le chemin le plus court")
+
             exit_maze(screen, maze, player_pos, cell_size, vision_radius, wall_color, 'RIGHT')
             display_message(screen, "Bravo ! Vous avez gagné !", 36, (255, 255, 0), (150, 150))
             pygame.display.flip()
@@ -183,6 +207,7 @@ def main(difficulty, algorithm, largeur, longueur):
             else:
                 player_pos[0], player_pos[1] = tps[0]
             maze.remove_tps()
+            move_count += 1
             chemin_dijkstra = None
 
         screen.fill((0, 0, 0))
@@ -195,17 +220,88 @@ def main(difficulty, algorithm, largeur, longueur):
         clock.tick(70)
     pygame.quit()
 
-if __name__ == "__main__":
-    difficulty = int(input("Merci d'entrer le niveau de difficulté: \n1)Normal\n2)Impossible\nVotre réponse(1 ou 2): "))
-    seed = input('Veuillez entrer une seed ou laisser vide pour en générer une: ')
-    if seed:
-        mz.rnd.seed(seed)
-    algorithm = int(input("Merci de choisir l'algorithme de génération du Labyrinthe:\n1)DFS (Depth First Search)\n2)Prim's Algorithm\n(1/2): "))
-    largeur = 0
-    while largeur < 10:
-        largeur = int(input("Merci de choisir la largeur du Labyrinthe (>10): "))
-    longueur = 0
-    while longueur < 10:
-        longueur = int(input("Merci de choisir la longueur du Labyrinthe (>10): "))
 
-    main(difficulty, algorithm, largeur, longueur)
+
+if __name__ == "__main__":
+    default_choice = input(
+        "Voulez-vous utiliser les paramètres par défaut ?\n"
+        "(DFS, largeur 10, longueur 10, seed aléatoire, braiding activé) (o/n): "
+    ).strip().lower()
+
+    if default_choice == "o":
+
+        difficulty = 1
+        algorithm = 1
+        largeur = 10
+        longueur = 10
+        seed = ""
+        braid = "o"
+    else:
+
+        while True:
+            try:
+                difficulty = int(input(
+                    "Merci d'entrer le niveau de difficulté: \n"
+                    "1) Normal\n2) Impossible\nVotre réponse (1 ou 2): "
+                ))
+                if difficulty not in [1, 2]:
+                    raise ValueError
+                break
+            except ValueError:
+                print("Entrée invalide, veuillez entrer 1 ou 2.")
+
+
+        seed = input("Veuillez entrer une seed ou laisser vide pour en générer une: ").strip()
+
+
+        while True:
+            try:
+                algorithm = int(input(
+                    "Merci de choisir l'algorithme de génération du Labyrinthe:\n"
+                    "1) DFS (Depth First Search)\n2) Prim's Algorithm\nVotre réponse (1 ou 2): "
+                ))
+                if algorithm not in [1, 2]:
+                    raise ValueError
+                break
+            except ValueError:
+                print("Entrée invalide, veuillez entrer 1 ou 2.")
+
+
+        while True:
+            try:
+                largeur = int(input("Merci de choisir la largeur du Labyrinthe (>10): "))
+                if largeur < 10:
+                    print("La largeur doit être supérieure ou égale à 10.")
+                    continue
+                break
+            except ValueError:
+                print("Entrée invalide, veuillez entrer un entier.")
+
+
+        while True:
+            try:
+                longueur = int(input("Merci de choisir la longueur du Labyrinthe (>10): "))
+                if longueur < 10:
+                    print("La longueur doit être supérieure ou égale à 10.")
+                    continue
+                break
+            except ValueError:
+                print("Entrée invalide, veuillez entrer un entier.")
+
+
+        while True:
+            braid = input("Voulez-vous que le labyrinthe ait plusieurs chemins (o/n): ").strip().lower()
+            if braid in ['o', 'n']:
+                break
+            else:
+                print("Entrée invalide, veuillez répondre par 'o' pour oui ou 'n' pour non.")
+
+    if seed:
+        mz.rnd.seed(91842724829)
+    else:
+        import random
+        generated_seed = random.randint(0, 10**12)
+        print("Seed générée automatiquement:", generated_seed)
+        mz.rnd.seed(generated_seed)
+
+    main(difficulty, algorithm, largeur, longueur, braid)
