@@ -1,6 +1,7 @@
 import pickle
 import random as rnd
 import pile as lifo
+import heapq
 
 class Maze:
     def __init__(self, width, height):
@@ -70,7 +71,6 @@ class Maze:
         return ('W', 'E') if x1 > x2 else ('E', 'W')
 
     def dfs_generation(self, x_debut, y_debut):
-        self.grille[y_debut][x_debut]['walls']['W'] = False
         self.grille[self.height - 1][self.width - 1]['walls']['E'] = False
         self.grille[y_debut][x_debut]['visited'] = True
         chemin = lifo.creer_pile_vide()
@@ -91,7 +91,6 @@ class Maze:
                 chemin = lifo.depiler(chemin)
 
     def prim_algo(self, x_debut, y_debut):
-        self.grille[y_debut][x_debut]['walls']['W'] = False
         self.grille[self.height - 1][self.width - 1]['walls']['E'] = False
         self.grille[y_debut][x_debut]['visited'] = True
         frontier = self.get_voisins(x_debut, y_debut)
@@ -109,6 +108,35 @@ class Maze:
             for voisin in self.get_voisins(x, y):
                 if not self.is_visited(*voisin) and voisin not in frontier:
                     frontier.append(voisin)
+
+    def dijkstra(self,x_start,y_start):
+        distances = {(x, y): float('inf') for y in range(self.height) for x in range(self.width)}
+        distances[(x_start,y_start)] = 0
+        precedent = {}
+        queue = [(0, (x_start, y_start))]
+        while queue:
+            current, (x,y) = heapq.heappop(queue)
+            if self.is_end(x,y):
+                path = []
+                while (x,y) in precedent:
+                    path.append((x,y))
+                    x, y = precedent[(x,y)]
+                path.append((x_start,y_start))
+                path.reverse()
+                return path
+            for x2,y2 in self.get_voisins(x,y):
+                direction = self.identify_direction(x, y, x2, y2)[0]
+                if not self.grille[y][x]['walls'][direction]:
+                    new_dist = current+1
+                    if new_dist<distances[(x2,y2)]:
+                        distances[(x2,y2)] = new_dist
+                        precedent[(x2,y2)] = (x,y)
+                        heapq.heappush(queue, (new_dist,(x2,y2)))
+        return None
+
+
+
+
 def print_labyrinth(maze):
     for y in range(maze.height):
         top_line = ""
@@ -159,6 +187,9 @@ if __name__ == "__main__":
     rnd.seed(seed)
 
     maze = generate_and_print_labyrinth(int(width), int(height), 0, 0)
+
+    chemin = maze.dijkstra(0,0)
+    print(chemin)
 
     save_choice = input("Voulez-vous enregistrer le labyrinthe ? (o/n) : ")
     if save_choice.lower() == 'o':
