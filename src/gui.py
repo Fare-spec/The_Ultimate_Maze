@@ -134,7 +134,7 @@ def main(difficulty, algorithm, largeur, longueur, braid):
     tps = maze.get_tp()
     chemin_dijkstra = None
     running = True
-
+    aide = 0
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -172,10 +172,11 @@ def main(difficulty, algorithm, largeur, longueur, braid):
                     move_count += 1
                     chemin_dijkstra = None
 
-                if event.key == pygame.K_o:
+                if event.key == pygame.K_q and aide <=2:
                     chemin_dijkstra = maze.dijkstra(int(player_pos[0]), int(player_pos[1]))
+                    aide+=1
 
-                if event.key == pygame.K_l:
+                if event.key == pygame.K_TAB:
                     chemin = maze.dijkstra(int(player_pos[0]), int(player_pos[1]))
                     if chemin:
                         for next_pos in chemin[1:]:

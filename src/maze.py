@@ -213,7 +213,7 @@ class Maze:
                             self.grille[y][x+1]['walls']['W'] = False
 
 
-    def add_random_wall(self,x,y):
+    def add_random_wall(self,xg,yg):
         candidate_cells = []
         for y in range(self.height):
             for x in range(self.width):
@@ -242,7 +242,7 @@ class Maze:
         self.grille[y0][x0]['walls'][d_from] = True
         self.grille[ny][nx]['walls'][d_to] = True
 
-        if self.dijkstra(x,y) is None:
+        if self.dijkstra(xg,yg) == 1 or self.dijkstra(xg,yg) is None:
             self.grille[y0][x0]['walls'][d_from] = False
             self.grille[ny][nx]['walls'][d_to] = False
             self.braid_maze()
