@@ -60,6 +60,7 @@ impl Maze {
     pub fn set_wall(&mut self, x: usize, y: usize, direction: char, state: bool) {
         if let Some(cell) = self.grille.get_mut(y).and_then(|row| row.get_mut(x)) {
             cell.walls.insert(direction, state);
+            /////////
         }
     }
 
