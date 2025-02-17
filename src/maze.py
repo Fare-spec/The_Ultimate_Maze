@@ -136,7 +136,6 @@ class Maze:
                     cur = pred[cur][0]
                 path.append((x_start, y_start))
                 path.reverse()
-                print(len(path))
                 return path
 
             if tp_avail and self.grille[y][x]['teleporter']:

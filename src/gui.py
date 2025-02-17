@@ -104,7 +104,7 @@ def exit_maze(screen, maze, player_pos, cell_size, vision_radius, wall_color, di
 
 def main(difficulty, algorithm, largeur, longueur, braid):
     pygame.init()
-    pygame.key.set_repeat(200, 50)
+    pygame.key.set_repeat(200, 100)
     wall_color = (255, 0, 0) if difficulty == 1 or difficulty == 3 else (0, 0, 0)
     vision_radius = 30
     cell_size = 20
