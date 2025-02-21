@@ -175,3 +175,4 @@ cython_debug/
 
 src/liste.py
 src/pile.py
+*.bin
