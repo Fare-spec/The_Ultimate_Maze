@@ -42,3 +42,4 @@
 - **Générer un binaire réutilisable pour le labyrinthe**  
 - **Réimplémenter Dijkstra sans `heapq`** (*en utilisant `LSC`*)  
 - **Créer une IA qui explore le labyrinthe en même temps que l'utilisateur pour voir qui gagne avec la même visibilité**  
+**https://github.com/Fare-spec/The_Ultimate_Maze.git**
