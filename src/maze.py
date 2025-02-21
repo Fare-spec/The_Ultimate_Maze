@@ -4,11 +4,20 @@ import pile as lifo
 import heapq
 
 class Maze:
+
     def __init__(self, width, height):
+        """creer l'objet labyrinthe et initialise les variable largeur et hauteur
+
+        Args:
+            width (_type_): largeur
+            height (_type_): hauter / longueur
+        """
         self.width = width
         self.height = height
 
     def init_labyrinth(self):
+        """initialise la grille du labyrinthe
+        """
         self.grille = [
             [
                 {
@@ -22,18 +31,43 @@ class Maze:
         ]
 
     def init_teleporter(self):
+        """ajoute les teleporteurs
+        """
         x, y = rnd.randint(1, self.width-1), rnd.randint(1, self.height-1)
         x2, y2 = rnd.randint(1, self.width-1), rnd.randint(1, self.height-1)
         self.grille[y][x]['teleporter'] = True
         self.grille[y2][x2]['teleporter'] = True
 
-    def is_tp(self, x, y):
+    def is_tp(self, x:int, y:int):
+        """renvoie true si la cellule (x,y)contient un tp ou non
+
+        Args:
+            x (int): coo
+            y (int): coo
+
+        Returns:
+            bool: True / False
+        """
         return self.grille[y][x]['teleporter']
 
-    def is_end(self, x, y):
+    def is_end(self, x:int, y:int):
+        """renvoie si la case x,y est la fin ou non
+
+        Args:
+            x (int): coo
+            y (int): coo
+
+        Returns:
+            bool: bool
+        """
         return (y == self.height - 1 and x == self.width - 1)
 
     def get_tp(self):
+        """renvoie toutes les coordonnées des tp du labyrinthe
+
+        Returns:
+            list[tuple]: les coo des tps
+        """
         tp = []
         for y in range(self.height):
             for x in range(self.width):
@@ -42,19 +76,39 @@ class Maze:
         return tp
 
     def remove_tps(self):
+        """enlève tous les tps du labyrinthe
+
+        """
         for y in range(self.height):
             for x in range(self.width):
                 self.grille[y][x]['teleporter'] = False
         return self
 
     def get_unvisited(self):
+
+        """renvoie toutes les cellules non visitées
+        """
         cells_unvisited = [(x, y) for y in range(self.height) for x in range(self.width) if not self.grille[y][x]['visited']]
         return cells_unvisited
 
-    def delete_wall(self, x, y, direction):
+    def delete_wall(self, x:int, y:int, direction:str):
+        """enlève un mur de la cellule x,y dans la direction donnée
+
+        Args:
+            x (int): coo
+            y (int): coo
+            direction (str): la direction
+        """
         self.grille[y][x]['walls'][direction] = False
 
-    def get_voisins(self, x, y):
+    def get_voisins(self, x:int, y:int):
+        """renvoie les voisins de la cellule x,y
+
+        Args:
+            x (int): coo
+            y (int): coo
+
+        """
         voisins = []
         if x > 0: voisins.append((x - 1, y))
         if x < self.width - 1: voisins.append((x + 1, y))
@@ -62,15 +116,41 @@ class Maze:
         if y < self.height - 1: voisins.append((x, y + 1))
         return voisins
 
-    def is_visited(self, x, y):
+    def is_visited(self, x:int, y:int):
+        """renvoie true si la cellule a été visitée false sinon
+
+        Args:
+            x (int): coo
+            y (int): coo
+
+        Returns:
+            bool: True/False
+        """
         return self.grille[y][x]['visited']
 
-    def identify_direction(self, x1, y1, x2, y2):
+    def identify_direction(self, x1:int, y1:int, x2:int, y2:int):
+        """renvoie la direction du mur de la cellule x1,y1 vers x2,y2 et son opposé
+
+        Args:
+            x1 (int): coo
+            y1 (int): coo
+            x2 (int): coo
+            y2 (int): coo
+
+        Returns:
+            tuple: direction des murs
+        """
         if x1 == x2:
             return ('N', 'S') if y1 > y2 else ('S', 'N')
         return ('W', 'E') if x1 > x2 else ('E', 'W')
 
-    def dfs_generation(self, x_debut, y_debut):
+    def dfs_generation(self, x_debut:int, y_debut:int):
+        """algo de generation de labyrinthe par parcours de graphe en largeur
+
+        Args:
+            x_debut (int): le debut en absisse
+            y_debut (int): le debut en ordonnée
+        """
         self.grille[self.height - 1][self.width - 1]['walls']['E'] = False
         self.grille[y_debut][x_debut]['visited'] = True
         chemin = lifo.creer_pile_vide()
@@ -89,7 +169,14 @@ class Maze:
                 chemin = lifo.empiler(chemin, selected_voisin)
             else:
                 chemin = lifo.depiler(chemin)
-    def dfs_generation_animated(self, x_debut, y_debut):
+    def dfs_generation_animated(self, x_debut: int, y_debut:int):
+        """pareil que dfs_generation mais avec un yiel permettant la generation pas à pas 
+
+        Args:
+            x_debut (int): debut
+            y_debut (int): debut
+
+        """
         self.grille[self.height - 1][self.width - 1]['walls']['E'] = False
         self.grille[y_debut][x_debut]['visited'] = True
         chemin = lifo.creer_pile_vide()
@@ -109,7 +196,13 @@ class Maze:
                 chemin = lifo.depiler(chemin)
             yield {"current": current, "stack": list(chemin), "maze": self.grille}
 
-    def prim_algo(self, x_debut, y_debut):
+    def prim_algo(self, x_debut:int, y_debut:int):
+        """un autre algo de generation
+
+        Args:
+            x_debut (int): coo
+            y_debut (int): coo
+        """
         self.grille[self.height - 1][self.width - 1]['walls']['E'] = False
         self.grille[y_debut][x_debut]['visited'] = True
         frontier = self.get_voisins(x_debut, y_debut)
@@ -128,7 +221,19 @@ class Maze:
                 if not self.is_visited(*voisin) and voisin not in frontier:
                     frontier.append(voisin)
 
-    def dijkstra(self, x_start, y_start, x_end, y_end, tp_penalty=1):
+    def dijkstra(self, x_start:int, y_start:int, x_end:int, y_end:int, tp_penalty:int=1):
+        """une implementation de Dijkstra avec la prise en charge des tps permettant de se deplacer plus vite parfois
+
+        Args:
+            x_start (int): coo
+            y_start (int): coo
+            x_end (int): coo
+            y_end (int): coo
+            tp_penalty (int, optional): le penaltit infligé par les tp . Defaults to 1.
+
+        Returns:
+            list: le chemin
+        """
         import math, heapq
         dist = {}
         pred = {}
@@ -192,6 +297,11 @@ class Maze:
 
 
     def braid_maze(self, p=0.5):
+        """la fonction qui enlève des murs aléatoirement pour rendre le labyrinthe plus difficile en ajoutant des "dead-end" plus grand et moins remarquable
+
+        Args:
+            p (float, optional): la probabilité d'enlever des murs. Defaults to 0.5.
+        """
         for y in range(self.height):
             for x in range(self.width):
                 cell = self.grille[y][x]
@@ -232,7 +342,14 @@ class Maze:
                             self.grille[y][x+1]['walls']['W'] = False
 
 
-    def add_random_wall(self,xg,yg):
+    def add_random_wall(self,xg:int,yg:int):
+        """ajoute un mur aléatoire et verifie quel le labyrinthe et toujours faisable depuis les coo xg, yg (du player)
+
+        Args:
+            xg (int): les coos
+            yg (int): les coos
+        """
+
         candidate_cells = []
         for y in range(self.height):
             for x in range(self.width):
@@ -275,6 +392,11 @@ class Maze:
 
 
 def print_labyrinth(maze):
+    """affiche une version cli du labyrinthe
+
+    Args:
+        maze (Maze): l'objet Maze
+    """
     for y in range(maze.height):
         top_line = ""
         for x in range(maze.width):
