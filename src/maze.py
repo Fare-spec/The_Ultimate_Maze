@@ -22,8 +22,8 @@ class Maze:
         ]
 
     def init_teleporter(self):
-        x, y = rnd.randint(0, self.width-1), rnd.randint(0, self.height-1)
-        x2, y2 = rnd.randint(0, self.width-1), rnd.randint(0, self.height-1)
+        x, y = rnd.randint(1, self.width-1), rnd.randint(1, self.height-1)
+        x2, y2 = rnd.randint(1, self.width-1), rnd.randint(1, self.height-1)
         self.grille[y][x]['teleporter'] = True
         self.grille[y2][x2]['teleporter'] = True
 
@@ -89,6 +89,25 @@ class Maze:
                 chemin = lifo.empiler(chemin, selected_voisin)
             else:
                 chemin = lifo.depiler(chemin)
+    def dfs_generation_animated(self, x_debut, y_debut):
+        self.grille[self.height - 1][self.width - 1]['walls']['E'] = False
+        self.grille[y_debut][x_debut]['visited'] = True
+        chemin = lifo.creer_pile_vide()
+        chemin = lifo.empiler(chemin, (x_debut, y_debut))
+        yield {"current": (x_debut, y_debut), "stack": list(chemin), "maze": self.grille}
+        while not lifo.est_pile_vide(chemin):
+            current = lifo.sommet(chemin)
+            unvisited = [v for v in self.get_voisins(*current) if not self.is_visited(*v)]
+            if unvisited:
+                selected_voisin = rnd.choice(unvisited)
+                murs = self.identify_direction(*current, *selected_voisin)
+                self.delete_wall(*current, murs[0])
+                self.delete_wall(*selected_voisin, murs[1])
+                self.grille[selected_voisin[1]][selected_voisin[0]]['visited'] = True
+                chemin = lifo.empiler(chemin, selected_voisin)
+            else:
+                chemin = lifo.depiler(chemin)
+            yield {"current": current, "stack": list(chemin), "maze": self.grille}
 
     def prim_algo(self, x_debut, y_debut):
         self.grille[self.height - 1][self.width - 1]['walls']['E'] = False
@@ -109,7 +128,7 @@ class Maze:
                 if not self.is_visited(*voisin) and voisin not in frontier:
                     frontier.append(voisin)
 
-    def dijkstra(self, x_start, y_start, tp_penalty=1):
+    def dijkstra(self, x_start, y_start, x_end, y_end, tp_penalty=1):
         import math, heapq
         dist = {}
         pred = {}
@@ -128,7 +147,7 @@ class Maze:
             if d > dist[state]:
                 continue
             x, y, tp_avail = state
-            if self.is_end(x, y):
+            if (x, y) == (x_end, y_end):
                 path = []
                 cur = state
                 while cur in pred:
@@ -136,7 +155,6 @@ class Maze:
                     cur = pred[cur][0]
                 path.append((x_start, y_start))
                 path.reverse()
-                print(len(path))
                 return path
 
             if tp_avail and self.grille[y][x]['teleporter']:
@@ -171,6 +189,7 @@ class Maze:
                             pred[new_state] = (state, 'normal')
                             heapq.heappush(pq, (nd, new_state))
         return None
+
 
     def braid_maze(self, p=0.5):
         for y in range(self.height):
@@ -308,7 +327,7 @@ if __name__ == "__main__":
 
     maze = generate_and_print_labyrinth(int(width), int(height), 0, 0)
 
-    chemin = maze.dijkstra(0,0)
+    chemin = maze.dijkstra(0,0,maze.width-1,maze.height-1)
     print(chemin)
 
     save_choice = input("Voulez-vous enregistrer le labyrinthe ? (o/n) : ")
