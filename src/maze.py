@@ -321,7 +321,7 @@ if __name__ == "__main__":
     width = input("Entrer la taille en largeur du labyrinthe: ")
     height = input("Entrer la taille en longueur du labyrinthe: ")
     if seed == "":
-        seed = rnd.randint(1, 100000000000000)
+        seed = rnd.randint(1, 10**12)
         print(f"Seed: {seed}")
     rnd.seed(seed)
 
